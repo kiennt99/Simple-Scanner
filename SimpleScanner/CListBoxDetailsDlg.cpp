@@ -12,7 +12,7 @@ CListBoxDetailsDlg::CListBoxDetailsDlg(CWnd* pParent /*= nullptr*/)
 }
 
 
-//Cứa sở này sẽ hiện ra list các file chứa signature đã được quét
+//Cứa sổ này sẽ hiện ra list các file chứa signature đã được quét
 BOOL CListBoxDetailsDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();

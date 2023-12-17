@@ -291,8 +291,8 @@ BOOL CSimpleScannerDlg::ScanSignature(CString hexCodeSignature)
 BOOL CSimpleScannerDlg::ScanSignatureFromDatabase()
 {
 	sqlite3* db;
-	//int result = sqlite3_open("D:\\Training Security\\SimpleScanner\\x64\\Release\\SignaturesDB.db", & db);
-	int result = sqlite3_open("..\\SignaturesDB.db", & db);
+	int result = sqlite3_open("D:\\Training Security\\training_security_week5\\SignaturesDB.db", & db);
+	//int result = sqlite3_open("..\\SignaturesDB.db", &db);
 	if (result != SQLITE_OK) {
 		AfxMessageBox(_T("Failed to open the database"), MB_OK);
 		return FALSE;
