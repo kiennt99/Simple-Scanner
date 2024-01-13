@@ -54,9 +54,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
+	CString m_databaseAddress;
 	CString m_directoryPath;
 	CString m_hexCodeSignature;
-	CListBox m_ctrlListBox;
+	//CListBox m_ctrlListBox;
 	std::vector<CString> m_msgListBox;
 	int m_validFiles;
 	void ScanDirectory(CString directoryPath, CString hexCodeSignature);
@@ -87,6 +88,8 @@ protected:
 public:
 	afx_msg void OnBnClickedExit();
 	afx_msg void OnBnClickedChooseFromDb();
+	CEdit c_editStatus;
+	CString m_statusList;
 };
 
 

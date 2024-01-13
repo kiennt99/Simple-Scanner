@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include <afxdialogex.h>
-
 //Tạo 1 class mới để tạo cửa số thông báo kết quả
 class CListBoxDetailsDlg :
     public CDialogEx
@@ -15,7 +14,6 @@ public:
 
 protected:
     virtual BOOL OnInitDialog() override;
-    CListBox m_listBox;
     CButton m_btnShowDetails;
 public:
     DECLARE_MESSAGE_MAP()
@@ -24,5 +22,7 @@ public:
     afx_msg void OnBnClickedOk();
     CString m_announcementText;
     CEdit* m_pAnnouncementText;
+    CString m_editControl;
+    CEdit m_editBox;
 };
 

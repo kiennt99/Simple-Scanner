@@ -60,6 +60,7 @@ CSimpleScannerDlg::CSimpleScannerDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_SIMPLESCANNER_DIALOG, pParent)
 	, m_directoryPath(_T(""))
 	, m_hexCodeSignature(_T(""))
+	, m_statusList(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -69,7 +70,8 @@ void CSimpleScannerDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_EditDirPath, m_directoryPath);
 	DDX_Text(pDX, IDC_EditSignature, m_hexCodeSignature);
-	DDX_Control(pDX, IDC_LIST1, m_ctrlListBox);
+	DDX_Control(pDX, IDC_EDIT_STATUS, c_editStatus);
+	DDX_Text(pDX, IDC_EDIT_STATUS, m_statusList);
 }
 
 BEGIN_MESSAGE_MAP(CSimpleScannerDlg, CDialogEx)
@@ -111,7 +113,7 @@ BOOL CSimpleScannerDlg::OnInitDialog()
 			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 		}
 	}
-
+		
 	m_customButtonStart.SubclassDlgItem(IDC_Start, this);
 	m_customButtonExit.SubclassDlgItem(IDC_Exit, this);
 	m_customButtonDirPath.SubclassDlgItem(IDC_EditDirPath, this);
@@ -182,7 +184,7 @@ HCURSOR CSimpleScannerDlg::OnQueryDragIcon()
 void CSimpleScannerDlg::reset()
 {
 	CSimpleScannerDlg::m_validFiles = 0;
-	m_ctrlListBox.ResetContent();
+	m_statusList.Empty();
 	m_msgListBox.clear();
 }
 
@@ -216,12 +218,18 @@ void CSimpleScannerDlg::ScanDirectory(CString directoryPath, CString hexCodeSign
 		{
 			CString filePath = fileFinder.GetFilePath();
 			if (ScanFile(filePath, hexCodeSignature)) {
-				m_ctrlListBox.AddString(_T("[+]Đã quét xong file ") + filePath);
+				CString newText = _T("[+]Đã quét xong file ") + filePath;
+				m_statusList.AppendFormat(_T("\r\n%s"), newText);
+				UpdateData(FALSE);
 				m_msgListBox.push_back(filePath);
 				m_validFiles++;
 			}
 			else
-				m_ctrlListBox.AddString(_T("[-]Đã quét xong file ") + filePath);
+			{
+				CString newText = _T("[-]Đã quét xong file ") + filePath;
+				m_statusList.AppendFormat(_T("\r\n%s"), newText);
+				UpdateData(FALSE);
+			}
 		}
 	}
 	m_announcementText.Format(_T("Chương trình đã quét xong, tìm thấy %d file chứa signature"), m_validFiles);
@@ -261,7 +269,6 @@ BOOL CSimpleScannerDlg::ScanFile(CString filePath, CString hexCodeSignature)
 }
 
 //Hàm scan signature kiểm tra xem signature bị sai định dạng hay ko
-
 BOOL CSimpleScannerDlg::ScanSignature(CString hexCodeSignature)
 {
 
@@ -291,8 +298,11 @@ BOOL CSimpleScannerDlg::ScanSignature(CString hexCodeSignature)
 BOOL CSimpleScannerDlg::ScanSignatureFromDatabase()
 {
 	sqlite3* db;
-	int result = sqlite3_open("D:\\Training Security\\training_security_week5\\SignaturesDB.db", & db);
-	//int result = sqlite3_open("..\\SignaturesDB.db", &db);
+	//int result = sqlite3_open("D:\\Training Security\\training_security_week5\\SignaturesDB.db", & db);
+	//int result = sqlite3_open("..\\SignaturesDB.db", & db);
+	CStringA strA(m_databaseAddress);
+	const char* database_address = strA.GetString();
+	int result = sqlite3_open(database_address, &db);
 	if (result != SQLITE_OK) {
 		AfxMessageBox(_T("Failed to open the database"), MB_OK);
 		return FALSE;
@@ -351,7 +361,6 @@ void CSimpleScannerDlg::ScanDirectoryWithSignature(CString directoryPath, CStrin
 		{
 			CString filePath = fileFinder.GetFilePath();
 			if (ScanFile(filePath, hexCodeSignature)) {
-				m_ctrlListBox.AddString(filePath + _T(" chứa signature ") + hexCodeSignature);
 				m_msgListBox.push_back(filePath + _T(" chứa signature ") + hexCodeSignature);
 				m_validFiles++;
 			}
@@ -426,21 +435,21 @@ UINT CSimpleScannerDlg::CalculateThreadProc(LPVOID Param){
 	CString strTimeStart = startTime.Format(_T("%H:%M:%S"));
 	CString strDateStart = startDate.Format(_T("%d/%m/%Y"));
 	
-	ourWnd->m_ctrlListBox.AddString(_T("Chương trình bắt đầu quét từ ") + strTimeStart + _T(" ") + strDateStart 
-		+ _T(", tại thư mục ") + ourWnd->m_directoryPath);
+	CString newText = _T("Chương trình bắt đầu quét từ ") + strTimeStart + _T(" ") + strDateStart
+		+ _T(", tại thư mục ") + ourWnd->m_directoryPath;
+	ourWnd->m_statusList.AppendFormat(_T("\r\%s"), newText);
 	ourWnd->ScanDirectory(ourWnd->m_directoryPath, ourWnd->m_hexCodeSignature);
 
-	int nIndex = ourWnd->m_ctrlListBox.GetCount();
 	CTime endTime = CTime::GetCurrentTime();
 	COleDateTime endDate = COleDateTime::GetCurrentTime();
 	CString strTimeEnd = endTime.Format(_T("%H:%M:%S"));
 	CString strDateEnd = endDate.Format(_T("%d/%m/%Y"));
 	CString msg;
 	msg.Format(_T("Chương trình quét xong lúc %s %s, tìm thấy %d file chứa signature"), strTimeEnd, strDateEnd, ourWnd->m_validFiles);
-	ourWnd->m_ctrlListBox.InsertString(nIndex, msg);
+	ourWnd->m_statusList.AppendFormat(_T("\r\n%s"), msg);
+	ourWnd->UpdateData(FALSE);
 	ourWnd->PostMessageW(WM_SCAN_DIRECTORY);
 	ourWnd->unlockControls();
-	
 	return 0;
 }
 
@@ -450,8 +459,7 @@ afx_msg LRESULT CSimpleScannerDlg::OnScanDirectory(WPARAM wParam, LPARAM lParam)
 {
 
 	CListBoxDetailsDlg Dlg;
-	if(m_ctrlListBox.GetCount() != 0)
-		Dlg.DoModal();
+	Dlg.DoModal();
 	return 0;
 }
 
@@ -490,14 +498,19 @@ UINT CSimpleScannerDlg::DatabaseThreadProc(LPVOID Param)
 //Hàm này tạo 1 object của class CListBoxDetailsDlg để tạo 1 cửa số thông báo về kết quả quét
 afx_msg LRESULT CSimpleScannerDlg::OnScanDirectoryWithDatabase(WPARAM wParam, LPARAM lParam)
 {
-	CListBoxDetailsDlg DLg;
-	if (m_ctrlListBox.GetCount() != 0)
-		DLg.DoModal();
+	CListBoxDetailsDlg Dlg;
+	Dlg.DoModal();
 	return 0;
 }
 
 //Khi chọn "Quét từ database" sẽ tạo ra 1 thread mới
 void CSimpleScannerDlg::OnBnClickedChooseFromDb()
 {
+	m_databaseAddress.Format(_T(""));
+	CFileDialog fileDialog(TRUE);
+	if (fileDialog.DoModal() == IDOK)
+	{
+		m_databaseAddress = fileDialog.GetPathName();
+	}
 	AfxBeginThread(DatabaseThreadProc, this);
 }
