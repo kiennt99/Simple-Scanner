@@ -31,7 +31,10 @@ BOOL CListBoxDetailsDlg::OnInitDialog()
 		{
 			m_editControl.AppendFormat(_T("\r%s"), msgListBox[i]);
 		}
-		m_editControl.AppendFormat(_T("\r\n%s"), msgListBox[i]);
+		else
+		{
+			m_editControl.AppendFormat(_T("\r\n%s"), msgListBox[i]);
+		}
 		UpdateData(FALSE);
 	}
 	m_announcementText.Format(pMainDlg->m_announcementText);

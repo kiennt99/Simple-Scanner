@@ -11,6 +11,7 @@
 
 #define WM_SCAN_DIRECTORY (WM_USER + 1)
 #define WM_SCAN_DIRECTORY_WITH_DATABASE (WM_USER + 2)
+#define WM_SCANDIRECTORY_FOR_STRING (WM_USER + 3)
 
 
 class CCustomButton : public CButton
@@ -85,11 +86,18 @@ public:
 protected:
 	afx_msg LRESULT OnScanDirectory(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnScanDirectoryWithDatabase(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnScanDirectoryForString(WPARAM wParam, LPARAM lParam);
 public:
 	afx_msg void OnBnClickedExit();
 	afx_msg void OnBnClickedChooseFromDb();
 	CEdit c_editStatus;
 	CString m_statusList;
+	afx_msg void OnBnClickedStartString();
+	CString m_stringSignature;
+	BOOL ScanFileForString(CString filePath, CString stringSignature);
+	void ScanDirectoryForString(CString directoryPath, CString stringSignature);
+	static UINT ThreadProcScanString(LPVOID Param);
+
 };
 
 
